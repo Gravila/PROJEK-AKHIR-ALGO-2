@@ -1,0 +1,133 @@
+daftar_tugas = []  
+  
+def tambah_tugas():  
+    print("\n--- Tambah Tugas Baru ---")  
+    nama_tugas = input("Nama tugas       : ")  
+    nama_matkul = input("Nama mata kuliah : ")  
+    deadline = input("Tanggal deadline (YYYY-MM-DD): ")  
+    deskripsi = input("Deskripsi tugas  : ")  
+  
+    tugas = {  
+        "id": len(daftar_tugas) + 1,  
+        "nama": nama_tugas,  
+        "matkul": nama_matkul,  
+        "deadline": deadline,  
+        "deskripsi": deskripsi  
+    }  
+  
+    daftar_tugas.append(tugas)  
+    print("✅ Tugas berhasil ditambahkan!\n")  
+  
+def merge_sort(tugas_list):  
+    if len(tugas_list) <= 1:  
+        return tugas_list  
+    mid = len(tugas_list) // 2  
+    left = merge_sort(tugas_list[:mid])  
+    right = merge_sort(tugas_list[mid:])  
+    return merge(left, right)  
+  
+def merge(left, right):  
+    result = []  
+    i = j = 0  
+    while i < len(left) and j < len(right):  
+        if left[i]["deadline"] <= right[j]["deadline"]:  
+            result.append(left[i])  
+            i += 1  
+        else:  
+            result.append(right[j])  
+            j += 1  
+    result.extend(left[i:])  
+    result.extend(right[j:])  
+    return result  
+  
+def tampilkan_tugas():  
+    print("\n--- Daftar Tugas (Terurut berdasarkan deadline) ---")  
+    if not daftar_tugas:  
+        print("Belum ada tugas.")  
+        return  
+  
+    tugas_terurut = merge_sort(daftar_tugas)  
+    for t in tugas_terurut:  
+        print(f"{t['id']}. {t['nama']} ({t['matkul']}) - Deadline: {t['deadline']}")  
+  
+def cari_tugas_by_matkul():  
+    matkul = input("Masukkan nama mata kuliah: ")  
+    hasil = [t for t in daftar_tugas if t["matkul"].lower() == matkul.lower()]  
+    print(f"\nHasil pencarian untuk matkul '{matkul}':")  
+    if not hasil:  
+        print("Tugas tidak ditemukan.")  
+    else:  
+        for t in hasil:  
+            print(f"{t['id']}. {t['nama']} - Deadline: {t['deadline']}")  
+  
+def binary_search_deadline(tugas_urut, target):  
+    low = 0  
+    high = len(tugas_urut) - 1  
+    while low <= high:  
+        mid = (low + high) // 2  
+        if tugas_urut[mid]["deadline"] == target:  
+            return tugas_urut[mid]  
+        elif tugas_urut[mid]["deadline"] < target:  
+            low = mid + 1  
+        else:  
+            high = mid - 1  
+    return None  
+  
+def cari_tugas_by_deadline():  
+    tugas_urut = merge_sort(daftar_tugas)  
+    tanggal = input("Masukkan deadline (YYYY-MM-DD): ")  
+    hasil = binary_search_deadline(tugas_urut, tanggal)  
+    print("\nHasil pencarian berdasarkan deadline:")  
+    if hasil:  
+        print(f"{hasil['id']}. {hasil['nama']} ({hasil['matkul']}) - {hasil['deadline']}")  
+    else:  
+        print("Tugas tidak ditemukan.")  
+  
+def hapus_tugas():  
+    print("\n--- Hapus Tugas ---")  
+    tampilkan_tugas()  
+    try:  
+        id_tugas = int(input("Masukkan ID tugas yang ingin dihapus: "))  
+        tugas_ditemukan = None  
+        for t in daftar_tugas:  
+            if t["id"] == id_tugas:  
+                tugas_ditemukan = t  
+                break  
+        
+        if tugas_ditemukan:  
+            daftar_tugas.remove(tugas_ditemukan)  
+            print(f"✅ Tugas dengan ID {id_tugas} berhasil dihapus!\n")  
+        else:  
+            print("⚠️ Tugas dengan ID tersebut tidak ditemukan.")  
+    except ValueError:  
+        print("⚠️ ID yang dimasukkan tidak valid.")  
+  
+def menu():  
+    while True:  
+        print("\n=== MENU ===")  
+        print("1. Tambah Tugas")  
+        print("2. Tampilkan Semua Tugas")  
+        print("3. Cari Tugas berdasarkan Matkul")  
+        print("4. Cari Tugas berdasarkan Deadline")  
+        print("5. Hapus Tugas")  
+        print("6. Keluar")  
+        pilihan = input("Pilih menu (1/2/3/4/5/6): ")  
+  
+        if pilihan == "1":  
+            tambah_tugas()  
+        elif pilihan == "2":  
+            tampilkan_tugas()  
+        elif pilihan == "3":  
+            cari_tugas_by_matkul()  
+        elif pilihan == "4":  
+            cari_tugas_by_deadline()  
+        elif pilihan == "5":  
+            hapus_tugas()  
+        elif pilihan == "6":  
+            print("👋 Terima kasih telah menggunakan Jadwalin!")  
+            break  
+        else:  
+            print("⚠️ Pilihan tidak valid, coba lagi.")  
+  
+# Jalankan program  
+menu()
