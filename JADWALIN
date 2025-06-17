@@ -106,36 +106,6 @@ def cari_tugas_by_matkul():
             print(f"{t['id']}. {t['nama']} - Deadline: {t['deadline']}")  
             print(f"   Deskripsi: {t['deskripsi']}")
             print()  # Tambah baris kosong untuk pemisah
-def binary_search_deadline(tugas_urut, target_deadline):
-    low, high = 0, len(tugas_urut) - 1
-    hasil = []
-
-    while low <= high:
-        mid = (low + high) // 2
-        if tugas_urut[mid]["deadline"] == target_deadline:
-            # Temukan semua tugas dengan tanggal sama
-            hasil.append(tugas_urut[mid])
-
-            # Cari ke kiri
-            left_idx = mid - 1
-            while left_idx >= 0 and tugas_urut[left_idx]["deadline"] == target_deadline:
-                hasil.insert(0, tugas_urut[left_idx])
-                left_idx -= 1
-
-            # Cari ke kanan
-            right_idx = mid + 1
-            while right_idx < len(tugas_urut) and tugas_urut[right_idx]["deadline"] == target_deadline:
-                hasil.append(tugas_urut[right_idx])
-                right_idx += 1
-
-            return hasil
-        elif tugas_urut[mid]["deadline"] < target_deadline:
-            low = mid + 1
-        else:
-            high = mid - 1
-
-    return hasil  # jika tidak ada ditemukan, hasil kosong
-
 
 def cari_semua_tugas_by_deadline(tugas_urut, target):
     """Mencari semua tugas dengan deadline tertentu"""
@@ -152,28 +122,27 @@ def cari_tugas_by_deadline():
         return
     
     print("Pilih opsi pencarian:")
-    print("1. Cari berdasarkan tanggal spesifik (Binary Search)")
+    print("1. Cari berdasarkan tanggal spesifik")
     print("2. Cari berdasarkan range tanggal")
     
     pilihan = input("Pilih opsi (1/2): ").strip()
     
     if pilihan == "1":
-        # Pencarian berdasarkan tanggal spesifik dengan Binary Search
+        # Pencarian berdasarkan tanggal spesifik
         tanggal = input_tanggal("Masukkan deadline (YYYY-MM-DD): ")
         tugas_urut = merge_sort(daftar_tugas.copy())  
-        hasil = binary_search_deadline(tugas_urut, tanggal)
-
+        hasil = cari_semua_tugas_by_deadline(tugas_urut, tanggal)
         print(f"\nHasil pencarian berdasarkan deadline {tanggal}:")  
         if hasil:
-            for idx, tugas in enumerate(hasil, start=1):
-                    print(f"{idx}. {tugas['nama']} ({tugas['matkul']}) - {tugas['deadline']}")
-                    print(f"   Deskripsi: {tugas['deskripsi']}\n")
-
+            for tugas in hasil:
+                print(f"{tugas['id']}. {tugas['nama']} ({tugas['matkul']}) - {tugas['deadline']}")
+                print(f"   Deskripsi: {tugas['deskripsi']}")
+                print()  # Tambah baris kosong untuk pemisah
         else:  
             print("Tugas tidak ditemukan.")
             
     elif pilihan == "2":
-        # Bagian pencarian range (tetap sama)
+        # Pencarian berdasarkan range tanggal
         tanggal_mulai = input_tanggal("Masukkan tanggal mulai (YYYY-MM-DD): ")
         tanggal_akhir = input_tanggal("Masukkan tanggal akhir (YYYY-MM-DD): ")
         
@@ -193,10 +162,11 @@ def cari_tugas_by_deadline():
         print(f"\nTugas dalam rentang {tanggal_mulai} sampai {tanggal_akhir}:")
         for t in tugas_terurut:
             print(f"{t['id']}. {t['nama']} ({t['matkul']}) - Deadline: {t['deadline']}")
-            print(f"   Deskripsi: {t['deskripsi']}\n")
+            print(f"   Deskripsi: {t['deskripsi']}")
+            print()  # Tambah baris kosong untuk pemisah
     else:
         print("⚠️ Pilihan tidak valid.")  
-
+  
 def hapus_tugas():  
     print("\n--- Hapus Tugas ---")  
     if not daftar_tugas:
