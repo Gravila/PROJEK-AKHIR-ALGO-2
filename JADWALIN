@@ -1,11 +1,48 @@
+from datetime import datetime
+import re
+
 daftar_tugas = []  
-  
+
+def validasi_tanggal(tanggal_str):
+    """Validasi format tanggal YYYY-MM-DD"""
+    if not tanggal_str.strip():  # Cek input kosong
+        return False
+    
+    pattern = r'^\d{4}-\d{2}-\d{2}$'
+    if not re.match(pattern, tanggal_str):
+        return False
+    
+    try:
+        datetime.strptime(tanggal_str, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
+def input_tidak_kosong(prompt):
+    """Memastikan input tidak kosong"""
+    while True:
+        nilai = input(prompt).strip()
+        if nilai:
+            return nilai
+        print("⚠️ Input tidak boleh kosong! Silakan coba lagi.")
+
+def input_tanggal(prompt):
+    """Input tanggal dengan validasi"""
+    while True:
+        tanggal = input(prompt).strip()
+        if not tanggal:
+            print("⚠️ Tanggal tidak boleh kosong!")
+            continue
+        if validasi_tanggal(tanggal):
+            return tanggal
+        print("⚠️ Format tanggal tidak valid! Gunakan format YYYY-MM-DD (contoh: 2024-12-25)")
+
 def tambah_tugas():  
     print("\n--- Tambah Tugas Baru ---")  
-    nama_tugas = input("Nama tugas       : ")  
-    nama_matkul = input("Nama mata kuliah : ")  
-    deadline = input("Tanggal deadline (YYYY-MM-DD): ")  
-    deskripsi = input("Deskripsi tugas  : ")  
+    nama_tugas = input_tidak_kosong("Nama tugas       : ")
+    nama_matkul = input_tidak_kosong("Nama mata kuliah : ")
+    deadline = input_tanggal("Tanggal deadline (YYYY-MM-DD): ")
+    deskripsi = input_tidak_kosong("Deskripsi tugas  : ")
   
     tugas = {  
         "id": len(daftar_tugas) + 1,  
@@ -39,55 +76,111 @@ def merge(left, right):
     result.extend(left[i:])  
     result.extend(right[j:])  
     return result  
-  
+
 def tampilkan_tugas():  
     print("\n--- Daftar Tugas (Terurut berdasarkan deadline) ---")  
     if not daftar_tugas:  
         print("Belum ada tugas.")  
         return  
   
-    tugas_terurut = merge_sort(daftar_tugas)  
+    tugas_terurut = merge_sort(daftar_tugas.copy())  # Menggunakan copy untuk menghindari modifikasi list asli
     for t in tugas_terurut:  
         print(f"{t['id']}. {t['nama']} ({t['matkul']}) - Deadline: {t['deadline']}")  
-  
+        print(f"   Deskripsi: {t['deskripsi']}")
+        print()  # Tambah baris kosong untuk pemisah
+
 def cari_tugas_by_matkul():  
-    matkul = input("Masukkan nama mata kuliah: ")  
-    hasil = [t for t in daftar_tugas if t["matkul"].lower() == matkul.lower()]  
+    if not daftar_tugas:
+        print("Belum ada tugas.")
+        return
+        
+    matkul = input_tidak_kosong("Masukkan nama mata kuliah: ")
+    hasil = [t for t in daftar_tugas if matkul.lower() in t["matkul"].lower()]  # Menggunakan 'in' untuk pencarian yang lebih fleksibel
     print(f"\nHasil pencarian untuk matkul '{matkul}':")  
     if not hasil:  
         print("Tugas tidak ditemukan.")  
-    else:  
-        for t in hasil:  
+    else:
+        # Urutkan hasil berdasarkan deadline
+        hasil_terurut = merge_sort(hasil)
+        for t in hasil_terurut:  
             print(f"{t['id']}. {t['nama']} - Deadline: {t['deadline']}")  
-  
-def binary_search_deadline(tugas_urut, target):  
-    low = 0  
-    high = len(tugas_urut) - 1  
-    while low <= high:  
-        mid = (low + high) // 2  
-        if tugas_urut[mid]["deadline"] == target:  
-            return tugas_urut[mid]  
-        elif tugas_urut[mid]["deadline"] < target:  
-            low = mid + 1  
-        else:  
-            high = mid - 1  
-    return None  
-  
+            print(f"   Deskripsi: {t['deskripsi']}")
+            print()  # Tambah baris kosong untuk pemisah
+
+def cari_semua_tugas_by_deadline(tugas_urut, target):
+    """Mencari semua tugas dengan deadline tertentu"""
+    hasil = []
+    for tugas in tugas_urut:
+        if tugas["deadline"] == target:
+            hasil.append(tugas)
+    return hasil
+
 def cari_tugas_by_deadline():  
-    tugas_urut = merge_sort(daftar_tugas)  
-    tanggal = input("Masukkan deadline (YYYY-MM-DD): ")  
-    hasil = binary_search_deadline(tugas_urut, tanggal)  
-    print("\nHasil pencarian berdasarkan deadline:")  
-    if hasil:  
-        print(f"{hasil['id']}. {hasil['nama']} ({hasil['matkul']}) - {hasil['deadline']}")  
-    else:  
-        print("Tugas tidak ditemukan.")  
+    print("\n--- Cari Tugas berdasarkan Deadline ---")
+    if not daftar_tugas:
+        print("Belum ada tugas.")
+        return
+    
+    print("Pilih opsi pencarian:")
+    print("1. Cari berdasarkan tanggal spesifik")
+    print("2. Cari berdasarkan range tanggal")
+    
+    pilihan = input("Pilih opsi (1/2): ").strip()
+    
+    if pilihan == "1":
+        # Pencarian berdasarkan tanggal spesifik
+        tanggal = input_tanggal("Masukkan deadline (YYYY-MM-DD): ")
+        tugas_urut = merge_sort(daftar_tugas.copy())  
+        hasil = cari_semua_tugas_by_deadline(tugas_urut, tanggal)
+        print(f"\nHasil pencarian berdasarkan deadline {tanggal}:")  
+        if hasil:
+            for tugas in hasil:
+                print(f"{tugas['id']}. {tugas['nama']} ({tugas['matkul']}) - {tugas['deadline']}")
+                print(f"   Deskripsi: {tugas['deskripsi']}")
+                print()  # Tambah baris kosong untuk pemisah
+        else:  
+            print("Tugas tidak ditemukan.")
+            
+    elif pilihan == "2":
+        # Pencarian berdasarkan range tanggal
+        tanggal_mulai = input_tanggal("Masukkan tanggal mulai (YYYY-MM-DD): ")
+        tanggal_akhir = input_tanggal("Masukkan tanggal akhir (YYYY-MM-DD): ")
+        
+        # Validasi range tanggal
+        if tanggal_mulai > tanggal_akhir:
+            print("⚠️ Tanggal mulai tidak boleh lebih besar dari tanggal akhir!")
+            return
+        
+        tugas_dalam_range = [t for t in daftar_tugas 
+                            if tanggal_mulai <= t["deadline"] <= tanggal_akhir]
+        
+        if not tugas_dalam_range:
+            print(f"Tidak ada tugas dalam rentang {tanggal_mulai} sampai {tanggal_akhir}")
+            return
+        
+        tugas_terurut = merge_sort(tugas_dalam_range)
+        print(f"\nTugas dalam rentang {tanggal_mulai} sampai {tanggal_akhir}:")
+        for t in tugas_terurut:
+            print(f"{t['id']}. {t['nama']} ({t['matkul']}) - Deadline: {t['deadline']}")
+            print(f"   Deskripsi: {t['deskripsi']}")
+            print()  # Tambah baris kosong untuk pemisah
+    else:
+        print("⚠️ Pilihan tidak valid.")  
   
 def hapus_tugas():  
     print("\n--- Hapus Tugas ---")  
+    if not daftar_tugas:
+        print("Belum ada tugas.")
+        return
+        
     tampilkan_tugas()  
     try:  
-        id_tugas = int(input("Masukkan ID tugas yang ingin dihapus: "))  
+        id_input = input("Masukkan ID tugas yang ingin dihapus: ").strip()
+        if not id_input:
+            print("⚠️ ID tidak boleh kosong.")
+            return
+            
+        id_tugas = int(id_input)
         tugas_ditemukan = None  
         for t in daftar_tugas:  
             if t["id"] == id_tugas:  
@@ -96,22 +189,23 @@ def hapus_tugas():
         
         if tugas_ditemukan:  
             daftar_tugas.remove(tugas_ditemukan)  
-            print(f"✅ Tugas dengan ID {id_tugas} berhasil dihapus!\n")  
+            print(f"✅ Tugas '{tugas_ditemukan['nama']}' dengan ID {id_tugas} berhasil dihapus!\n")  
         else:  
             print("⚠️ Tugas dengan ID tersebut tidak ditemukan.")  
     except ValueError:  
-        print("⚠️ ID yang dimasukkan tidak valid.")  
+        print("⚠️ ID yang dimasukkan tidak valid. Harap masukkan angka.")  
   
 def menu():  
     while True:  
-        print("\n=== MENU ===")  
+        print("\n=== MENU JADWALIN ===")  
         print("1. Tambah Tugas")  
         print("2. Tampilkan Semua Tugas")  
-        print("3. Cari Tugas berdasarkan Matkul")  
+        print("3. Cari Tugas berdasarkan Mata Kuliah")  
         print("4. Cari Tugas berdasarkan Deadline")  
         print("5. Hapus Tugas")  
         print("6. Keluar")  
-        pilihan = input("Pilih menu (1/2/3/4/5/6): ")  
+        
+        pilihan = input("Pilih menu (1-6): ").strip()
   
         if pilihan == "1":  
             tambah_tugas()  
@@ -127,7 +221,23 @@ def menu():
             print("👋 Terima kasih telah menggunakan Jadwalin!")  
             break  
         else:  
-            print("⚠️ Pilihan tidak valid, coba lagi.")  
+            print("⚠️ Pilihan tidak valid, silakan pilih 1-6.")  
   
+def tampilkan_header():
+    """Menampilkan header ASCII art untuk Jadwalin"""
+    print("=" * 60)
+    print("     ██╗ █████╗ ██████╗ ██╗    ██╗ █████╗ ██╗     ██╗███╗   ██╗")
+    print("     ██║██╔══██╗██╔══██╗██║    ██║██╔══██╗██║     ██║████╗  ██║")
+    print("     ██║███████║██║  ██║██║ █╗ ██║███████║██║     ██║██╔██╗ ██║")
+    print("██   ██║██╔══██║██║  ██║██║███╗██║██╔══██║██║     ██║██║╚██╗██║")
+    print("╚█████╔╝██║  ██║██████╔╝╚███╔███╔╝██║  ██║███████╗██║██║ ╚████║")
+    print(" ╚════╝ ╚═╝  ╚═╝╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚═╝╚═╝  ╚═══╝")
+    print("=" * 60)
+    print("🎓 Sistem Manajemen Tugas Kuliah - Versi 2.0")
+    print("   Kelola tugas kuliah Anda dengan mudah dan efisien!")
+    print("=" * 60)
+
 # Jalankan program  
-menu()
+if __name__== "_main_":
+    tampilkan_header()
+    menu()
