@@ -197,6 +197,7 @@ def hapus_tugas():
   
 def menu():  
     while True:  
+        tampilkan_header()  # Header muncul setiap kali menu ditampilkan
         print("\n=== MENU JADWALIN ===")  
         print("1. Tambah Tugas")  
         print("2. Tampilkan Semua Tugas")  
@@ -237,7 +238,4 @@ def tampilkan_header():
     print("   Kelola tugas kuliah Anda dengan mudah dan efisien!")
     print("=" * 60)
 
-# Jalankan program  
-if __name__== "_main_":
-    tampilkan_header()
     menu()
